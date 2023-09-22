@@ -11,7 +11,6 @@
 #include "system_allocator.hpp"
 
 namespace InferenceEngine {
-IE_SUPPRESS_DEPRECATED_START
 
 Blob* Blob::getHardwareBlob() {
 #ifdef PROXY_PLUGIN_ENABLED

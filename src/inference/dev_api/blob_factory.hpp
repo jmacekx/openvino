@@ -18,7 +18,6 @@
 #include "ie_memcpy.h"
 #include "ie_preprocess.hpp"
 
-IE_SUPPRESS_DEPRECATED_START
 /**
  * @private
  */
@@ -148,4 +147,3 @@ void CopyVectorToBlob(const InferenceEngine::Blob::Ptr outputBlob, const std::ve
         IE_THROW() << "Element size mismatch between blob and vector";
     ie_memcpy(outputBlob->buffer().as<T*>(), outputBlob->byteSize(), &inputVector[0], inputVector.size() * sizeof(T));
 }
-IE_SUPPRESS_DEPRECATED_END

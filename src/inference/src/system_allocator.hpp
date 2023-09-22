@@ -6,7 +6,6 @@
 
 #include "ie_allocator.hpp"
 
-IE_SUPPRESS_DEPRECATED_START
 namespace InferenceEngine {
 class SystemMemoryAllocator : public InferenceEngine::IAllocator {
 public:
@@ -33,6 +32,5 @@ public:
         return true;
     }
 };
-IE_SUPPRESS_DEPRECATED_END
 
 }  // namespace InferenceEngine

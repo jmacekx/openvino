@@ -9,8 +9,6 @@
 #include "openvino/runtime/make_tensor.hpp"
 #include "unit_test_utils/mocks/mock_allocator.hpp"
 
-IE_SUPPRESS_DEPRECATED_START
-
 class BlobTests : public ::testing::Test {
 protected:
     std::shared_ptr<MockAllocator> createMockAllocator() {

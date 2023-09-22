@@ -9,16 +9,6 @@
  */
 #pragma once
 
-#if !defined(IN_OV_COMPONENT) && !defined(IE_LEGACY_HEADER_INCLUDED)
-#    define IE_LEGACY_HEADER_INCLUDED
-#    ifdef _MSC_VER
-#        pragma message( \
-            "The Inference Engine API is deprecated and will be removed in the 2024.0 release. For instructions on transitioning to the new API, please refer to https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html")
-#    else
-#        warning("The Inference Engine API is deprecated and will be removed in the 2024.0 release. For instructions on transitioning to the new API, please refer to https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html")
-#    endif
-#endif
-
 #include <map>
 #include <memory>
 #include <string>
@@ -36,7 +26,7 @@ IE_SUPPRESS_DEPRECATED_START
 /**
  * @brief This class contains information about each input of the network
  */
-class INFERENCE_ENGINE_1_0_DEPRECATED InputInfo {
+class InputInfo {
 public:
     /** @brief A smart pointer to the InputInfo instance */
     using Ptr = std::shared_ptr<InputInfo>;
@@ -140,12 +130,11 @@ public:
     }
 
     /**
-     * @brief Initializes the pointer to the input data that stores the main input parameters like dims,
-     * etc
+     * @brief Initializes the pointer to the input data that stores the main input parameters like dims, etc
      *
      * This method initializes the precision with the information from the inputPtr if it was not set
-     * explicitly through InputInfo::setPrecision. If InputInfo::setPrecision is called, this method does
-     * not overwrite the precision.
+     * explicitly through InputInfo::setPrecision. If InputInfo::setPrecision is called, this method does not overwrite
+     * the precision.
      * @param inputPtr Pointer to the input data to set
      */
     void setInputData(DataPtr inputPtr) {

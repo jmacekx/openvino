@@ -12,8 +12,6 @@
 using namespace ::testing;
 using namespace InferenceEngine;
 
-IE_SUPPRESS_DEPRECATED_START
-
 using ChannelNum = size_t;
 using BatchNum = size_t;
 using PrecisionType = InferenceEngine::Precision::ePrecision;

@@ -5,7 +5,6 @@
 #include "system_allocator.hpp"
 
 namespace InferenceEngine {
-IE_SUPPRESS_DEPRECATED_START
 
 INFERENCE_ENGINE_API_CPP(std::shared_ptr<IAllocator>) CreateDefaultAllocator() noexcept {
     try {

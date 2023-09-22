@@ -1,3 +1,5 @@
+#include <ie_core.hpp>
+
 #include <transformations/low_precision/mark_dequantization_subgraph.hpp>
 
 #include <low_precision/common/quantization_granularity_restriction.hpp>

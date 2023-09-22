@@ -10,22 +10,6 @@
  */
 #pragma once
 
-// TODO: Remove after migration to new API in the benchmark app
-#ifndef IN_OV_COMPONENT
-#    define IN_OV_COMPONENT
-#    define WAS_OV_LIBRARY_DEFINED
-#endif
-
-#if !defined(IN_OV_COMPONENT) && !defined(IE_LEGACY_HEADER_INCLUDED)
-#    define IE_LEGACY_HEADER_INCLUDED
-#    ifdef _MSC_VER
-#        pragma message( \
-            "The Inference Engine API is deprecated and will be removed in the 2024.0 release. For instructions on transitioning to the new API, please refer to https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html")
-#    else
-#        warning("The Inference Engine API is deprecated and will be removed in the 2024.0 release. For instructions on transitioning to the new API, please refer to https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html")
-#    endif
-#endif
-
 #include <ie_remote_context.hpp>
 #include <memory>
 #include <string>
@@ -351,8 +335,3 @@ INFERENCE_ENGINE_1_0_DEPRECATED static inline Blob::Ptr make_shared_blob(const T
 }  // namespace gpu
 
 }  // namespace InferenceEngine
-
-#ifdef WAS_OV_LIBRARY_DEFINED
-#    undef IN_OV_COMPONENT
-#    undef WAS_OV_LIBRARY_DEFINED
-#endif

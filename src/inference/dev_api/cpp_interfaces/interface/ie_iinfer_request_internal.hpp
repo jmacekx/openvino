@@ -18,7 +18,6 @@
 
 namespace InferenceEngine {
 
-IE_SUPPRESS_DEPRECATED_START
 class IExecutableNetworkInternal;
 class IVariableStateInternal;
 
@@ -351,7 +350,5 @@ private:
  * @brief SoPtr to IInferRequestInternal.
  */
 using SoIInferRequestInternal = ov::SoPtr<IInferRequestInternal>;
-
-IE_SUPPRESS_DEPRECATED_END
 
 }  // namespace InferenceEngine

@@ -1,3 +1,5 @@
+#include <ie_core.hpp>
+
 int main() {
 //! [part9]
 while(true) {

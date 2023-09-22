@@ -6,8 +6,6 @@
 
 #include <memory>
 
-IE_SUPPRESS_DEPRECATED_START
-
 InferenceEngine::Blob::Ptr make_blob_with_precision(const InferenceEngine::TensorDesc& desc) {
     return make_blob_with_precision(desc.getPrecision(), desc);
 }

@@ -9,28 +9,17 @@
  */
 #pragma once
 
-#if !defined(IN_OV_COMPONENT) && !defined(IE_LEGACY_HEADER_INCLUDED)
-#    define IE_LEGACY_HEADER_INCLUDED
-#    ifdef _MSC_VER
-#        pragma message( \
-            "The Inference Engine API is deprecated and will be removed in the 2024.0 release. For instructions on transitioning to the new API, please refer to https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html")
-#    else
-#        warning("The Inference Engine API is deprecated and will be removed in the 2024.0 release. For instructions on transitioning to the new API, please refer to https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html")
-#    endif
-#endif
-
 #include <utility>
 
 #include "ie_allocator.hpp"
 
 namespace InferenceEngine {
-IE_SUPPRESS_DEPRECATED_START
 namespace details {
 /**
  * @brief This class is a LockedMemory concept for hardware memory
  */
 template <class T>
-class INFERENCE_ENGINE_1_0_DEPRECATED LockedMemoryBase {
+class LockedMemoryBase {
     IAllocator* _allocator = nullptr;
     void* _handle = nullptr;
     mutable T* _locked = nullptr;
@@ -125,7 +114,7 @@ protected:
  * @brief This class represents locked memory for read/write memory
  */
 template <class T>
-class INFERENCE_ENGINE_1_0_DEPRECATED LockedMemory : public details::LockedMemoryBase<T> {
+class LockedMemory : public details::LockedMemoryBase<T> {
     using base = details::LockedMemoryBase<T>;
 
 public:
@@ -233,7 +222,7 @@ public:
  * @brief This class is for <void*> data and allows casting to any pointers
  */
 template <>
-class INFERENCE_ENGINE_1_0_DEPRECATED LockedMemory<void> : public details::LockedMemoryBase<void> {
+class LockedMemory<void> : public details::LockedMemoryBase<void> {
     using base = details::LockedMemoryBase<void>;
 
 public:
@@ -302,7 +291,6 @@ public:
         return base::isEqualTo(lm.as<void*>());
     }
 
-    IE_SUPPRESS_DEPRECATED_START
     /**
      * @brief Compares the object with the one stored in the memory
      * @param pointer A pointer to compare with
@@ -312,7 +300,6 @@ public:
     friend bool operator==(const void* pointer, const LockedMemory<void>& lm) {
         return lm.operator==(pointer);
     }
-    IE_SUPPRESS_DEPRECATED_END
 
     /**
      * @brief Casts stored object to any given type
@@ -345,7 +332,7 @@ public:
  * @brief This class is for read-only segments
  */
 template <class T>
-class INFERENCE_ENGINE_1_0_DEPRECATED LockedMemory<const T> : public details::LockedMemoryBase<T> {
+class LockedMemory<const T> : public details::LockedMemoryBase<T> {
     using base = details::LockedMemoryBase<T>;
 
 public:
@@ -424,5 +411,4 @@ public:
         return reinterpret_cast<S>(base::dereference());
     }
 };
-IE_SUPPRESS_DEPRECATED_END
 }  // namespace InferenceEngine

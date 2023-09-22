@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "async_infer_request.hpp"
+#include "ie_ngraph_utils.hpp"
+#include "ie_plugin_config.hpp"
 #include "itt.hpp"
 #include "openvino/op/util/op_types.hpp"
 #include "openvino/runtime/exec_model_info.hpp"
