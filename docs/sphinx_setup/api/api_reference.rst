@@ -15,6 +15,6 @@ API references available:
 .. toctree::
    :maxdepth: 2
 
-   ../groupov_cpp_api
-   ../groupov_c_api
+   c_cpp_api/group__ov__cpp__api
+   c_cpp_api/group__ov__c__api
    ie_python_api/api

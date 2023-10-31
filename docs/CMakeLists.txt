@@ -4,64 +4,121 @@
 
 add_subdirectory(snippets)
 
+set(ENABLE_CPP_API OFF CACHE BOOL "Build with C/C++ API.")
+set(ENABLE_PYTHON_API OFF CACHE BOOL "Build with Python API.")
+set(ENABLE_NOTEBOOKS OFF CACHE BOOL "Build with openvino notebooks.")
+set(ENABLE_OMZ OFF CACHE BOOL "Build with open_model_zoo.")
+set(ENABLE_OVMS OFF CACHE BOOL "Build with ovms.")
+set(OVMS_DOCS_DIR "" CACHE PATH "Path to model server documentation dir.")
+
+if(${ENABLE_OVMS} AND (OVMS_DOCS_DIR STREQUAL ""))
+    message( FATAL_ERROR "You want to build OVMS, but OVMS_DOCS_DIR variable is empty." )
+endif()
+
+
 function(build_docs)
     find_package(Doxygen REQUIRED dot)
     find_package(LATEX REQUIRED)
-
-    find_program(DOXYREST_EXECUTABLE NAMES doxyrest)
-    if (NOT DOXYREST_EXECUTABLE)
-        message(FATAL_ERROR "No doxyrest found. Documentation output is not available")
-    endif()
 
     set(DOCS_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     set(DOCS_SOURCE_DIR "${OpenVINO_SOURCE_DIR}/docs")
     set(SCRIPTS_DIR "${DOCS_SOURCE_DIR}/scripts")
 
     # Preprocessing scripts
-    set(PREPARE_XML_SCRIPT "${SCRIPTS_DIR}/prepare_xml.py")
     set(REMOVE_XML_SCRIPT "${SCRIPTS_DIR}/remove_xml.py")
+    set(FILE_HELPER_SCRIPT "${SCRIPTS_DIR}/filehelper.py")
     set(COPY_IMAGES_SCRIPT "${SCRIPTS_DIR}/copy_images.py")
-    set(DOC_TEST_DIR "${SCRIPTS_DIR}/tests")
     set(DOXYGEN_MAPPING_SCRIPT "${SCRIPTS_DIR}/create_mapping.py")
+    set(BREATHE_APIDOC_SCRIPT "${SCRIPTS_DIR}/apidoc.py")
 
-    # out dirs
-    set(XML_OUTPUT "${DOCS_BUILD_DIR}/xml")
-    set(RST_OUTPUT "${DOCS_BUILD_DIR}/rst")
+    # Doxygen/Sphinx setup
+    set(DOXYGEN_XML_OUTPUT "${DOCS_BUILD_DIR}/xml")
+    set(SPHINX_SETUP_DIR "${DOCS_SOURCE_DIR}/sphinx_setup")
+    set(SPHINX_SOURCE_DIR "${DOCS_BUILD_DIR}/sphinx_source")
     set(SPHINX_OUTPUT "${DOCS_BUILD_DIR}/_build")
 
-    # Sphinx folders, doxyrest templates and config
-    set(DOXYREST_IN "${DOCS_SOURCE_DIR}/doxyrest")
-    set(DOXYREST_OUT "${DOCS_BUILD_DIR}/doxyrest")
-    set(DOXYREST_CONFIG_IN "${DOCS_SOURCE_DIR}/doxyrest-config.lua")
-    set(DOXYREST_CONFIG_OUT "${DOCS_BUILD_DIR}/doxyrest-config.lua")
-    configure_file(${DOXYREST_CONFIG_IN} ${DOXYREST_CONFIG_OUT} @ONLY)
+    list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED preprocessing OpenVINO articles")
+    list(APPEND commands COMMAND ${Python3_EXECUTABLE} ${FILE_HELPER_SCRIPT}
+        --filetype=rst
+        --input_dir=${OpenVINO_SOURCE_DIR}
+        --output_dir=${SPHINX_SOURCE_DIR}
+        --exclude_dir=${SPHINX_SOURCE_DIR})
+    list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED preprocessing OpenVINO articles")
 
-    # Doxygen config
-    set(DOXYFILE_SOURCE "${DOCS_SOURCE_DIR}/Doxyfile.config")
-    set(DOXYFILE_BUILD "${DOCS_BUILD_DIR}/Doxyfile.config")
-    configure_file(${DOXYFILE_SOURCE} ${DOXYFILE_BUILD} @ONLY)
+    if(${ENABLE_CPP_API})
+        # Doxygen config
+        set(DOXYFILE_SOURCE "${DOCS_SOURCE_DIR}/Doxyfile.config")
+        set(DOXYFILE_BUILD "${DOCS_BUILD_DIR}/Doxyfile.config")
+        configure_file(${DOXYFILE_SOURCE} ${DOXYFILE_BUILD} @ONLY)
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED preprocessing OpenVINO C/C++ API reference")
+        list(APPEND commands COMMAND ${Python3_EXECUTABLE} ${REMOVE_XML_SCRIPT} ${DOXYGEN_XML_OUTPUT})
+        list(APPEND commands COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_BUILD})
+        list(APPEND post_commands COMMAND ${Python3_EXECUTABLE} ${BREATHE_APIDOC_SCRIPT} ${DOXYGEN_XML_OUTPUT} -o "${SPHINX_SOURCE_DIR}/api/c_cpp_api" -m -T -p openvino -g class,group,namespace,struct,union,enum)
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED preprocessing OpenVINO C/C++ API reference")
+    endif()
 
-    add_custom_target(doxygen_rst
-                      COMMAND ${Python3_EXECUTABLE} ${REMOVE_XML_SCRIPT} ${XML_OUTPUT}
-                      COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_BUILD}
+    if(${ENABLE_PYTHON_API})
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED preprocessing OpenVINO Python API")
+        list(APPEND commands COMMAND ${Python3_EXECUTABLE} -m pip install openvino)
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED preprocessing OpenVINO Python API")
+    endif()
+
+    if(${ENABLE_NOTEBOOKS})
+        set(NBDOC_SCRIPT "${DOCS_SOURCE_DIR}/nbdoc/nbdoc.py")
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED preprocessing OpenVINO notebooks")
+        list(APPEND commands
+            COMMAND ${Python3_EXECUTABLE} "${NBDOC_SCRIPT}" "${DOCS_SOURCE_DIR}/notebooks" "${SPHINX_SOURCE_DIR}/notebooks"
+        )
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED preprocessing OpenVINO notebooks")
+    endif()
+
+    if(${ENABLE_OVMS})
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED preprocessing OVMS")
+        list(APPEND commands COMMAND ${Python3_EXECUTABLE} ${FILE_HELPER_SCRIPT}
+        --filetype=md
+        --input_dir=${OVMS_DOCS_DIR}
+        --output_dir=${SPHINX_SOURCE_DIR}
+        --exclude_dir=${SPHINX_SOURCE_DIR})
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED preprocessing OVMS")
+    endif()
+
+    if(${ENABLE_OMZ})
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED preprocessing OMZ")
+        list(APPEND commands
+            COMMAND ${Python3_EXECUTABLE} ${OpenVINO_SOURCE_DIR}/thirdparty/open_model_zoo/ci/prepare-documentation.py ${CMAKE_BINARY_DIR}/open_model_zoo)
+        list(APPEND commands COMMAND ${Python3_EXECUTABLE} ${FILE_HELPER_SCRIPT}
+            --filetype=md
+            --input_dir=${CMAKE_BINARY_DIR}/open_model_zoo
+            --output_dir=${SPHINX_SOURCE_DIR}
+            --exclude_dir=${SPHINX_SOURCE_DIR})
+        list(APPEND commands COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED preprocessing OMZ")
+    endif()
+
+    # Preprocess docs
+    add_custom_target(preprocess_docs
+                      COMMAND ${CMAKE_COMMAND} -E remove_directory ${SPHINX_SOURCE_DIR}
+                      ${commands}
                       WORKING_DIRECTORY ${DOCS_BUILD_DIR}
-                      COMMENT "Generate doxygen XML output"
                       VERBATIM)
 
-    # Post-process docs
-    add_custom_command(TARGET doxygen_rst
+    add_custom_command(TARGET preprocess_docs
                        POST_BUILD
-                       COMMAND ${Python3_EXECUTABLE} ${PREPARE_XML_SCRIPT} ${XML_OUTPUT}
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${DOXYREST_IN} ${DOXYREST_OUT}
-                       COMMAND ${DOXYREST_EXECUTABLE} -c ${DOXYREST_CONFIG_OUT}
-                       COMMAND ${Python3_EXECUTABLE} ${COPY_IMAGES_SCRIPT} ${XML_OUTPUT} ${RST_OUTPUT}
-                       COMMAND ${Python3_EXECUTABLE} ${DOXYGEN_MAPPING_SCRIPT} ${XML_OUTPUT} ${DOCS_BUILD_DIR} ${OpenVINO_SOURCE_DIR}/../
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${DOXYREST_IN} ${DOXYREST_OUT}
-                       COMMENT "Prepare xml"
+                       COMMAND ${Python3_EXECUTABLE} ${COPY_IMAGES_SCRIPT} ${DOXYGEN_XML_OUTPUT} ${SPHINX_SOURCE_DIR}
+                       COMMAND ${Python3_EXECUTABLE} ${DOXYGEN_MAPPING_SCRIPT} ${DOXYGEN_XML_OUTPUT} ${DOCS_BUILD_DIR} ${OpenVINO_SOURCE_DIR}/../
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_SETUP_DIR} ${SPHINX_SOURCE_DIR}
+                       ${post_commands}
                        VERBATIM)
 
-    set_target_properties(doxygen_rst
-                          PROPERTIES FOLDER docs)
+    # Build docs
+    add_custom_target(sphinx_docs
+                      DEPENDS preprocess_docs
+                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "STARTED sphinx documentation build"
+                      COMMAND sphinx-build -j auto -w ${DOCS_BUILD_DIR}/sphinx.log -b html ${SPHINX_SOURCE_DIR} ${SPHINX_OUTPUT}
+                      COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green "FINISHED sphinx documentation build"
+                      WORKING_DIRECTORY ${SPHINX_SOURCE_DIR}
+                      VERBATIM)
+
+    set_target_properties(preprocess_docs sphinx_docs PROPERTIES FOLDER docs)
 
 endfunction()
 

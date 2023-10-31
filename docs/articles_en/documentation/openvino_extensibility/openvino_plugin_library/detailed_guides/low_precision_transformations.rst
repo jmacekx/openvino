@@ -12,8 +12,6 @@ OpenVINO™ Low Precision Transformations
    :caption: Low Precision Transformations
    :hidden:
 
-   Low Precision Transformations <openvino_docs_OV_UG_lpt>
-
    Attributes <openvino_docs_OV_UG_lpt_attributes>
    Step 1. Prerequisites transformations <openvino_docs_OV_UG_lpt_step1_prerequisites>
    Step 2. Markup transformations <openvino_docs_OV_UG_lpt_step2_markup>

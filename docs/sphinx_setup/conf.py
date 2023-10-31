@@ -19,8 +19,6 @@ from json import JSONDecodeError
 from sphinx.ext.autodoc import ClassDocumenter
 
 
-sys.path.insert(0, os.path.abspath('doxyrest-sphinx'))
-
 # -- Project information -----------------------------------------------------
 
 project = 'OpenVINO™'
@@ -40,13 +38,16 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_panels',
     'sphinx_design',
-    'doxyrest',
-    'cpplexer',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'openvino_custom_sphinx_sitemap',
-    'myst_parser'
+    'myst_parser',
+    'breathe'
 ]
+
+breathe_projects = {
+    "openvino": "../xml/"
+}
 
 myst_enable_extensions = ["colon_fence"]
 
